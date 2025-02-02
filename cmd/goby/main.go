@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"log"
 	"github.com/spf13/cobra"
 
@@ -40,9 +41,17 @@ func initCmd() *cobra.Command {
 }
 
 func run(path string) error {
+	// Create output directory if it doesn't exists
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := os.MkdirAll(path, 0755); err != nil {
+			return err
+		}
+	}
+
 	generator.GenerateGoMain(path)
 	generator.GenerateeBPFProgram(path)
 	generator.DumpBTF(path)
+	generator.DumpMake(path)
 
 	return nil
 }

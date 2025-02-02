@@ -13,7 +13,7 @@ func GenerateGoMain(path string) {
 	// Define the file content
 	content := `package main
 
-//go:generate go run githubo.com/cilium/ebpf/cmd/bpf2go -target bpf program program.bpf.c
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpf program program.bpf.c
 
 import (
 	"os"
@@ -39,12 +39,13 @@ func main() {
 	defer objs.Close()
 
 	// Here you can now attach eBPF Programs
+	// Check Cilium docs for more functionalities: https://pkg.go.dev/github.com/cilium/ebpf
 	// An example for eBPF Tracepoint
-	//tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExecveTp, nil)
-	//if err != nil {
-	//	log.Fatalf("Attaching Tracepoint: %s", err)
-	//}
-	//defer tp.Close()
+	tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExecveTp, nil)
+	if err != nil {
+		log.Fatalf("Attaching Tracepoint: %s", err)
+	}
+	defer tp.Close()
 	
 	log.Println("eBPF program attached. Press Ctrl+C to exit.")
 
@@ -59,7 +60,7 @@ func main() {
 }`
 
 	// Create a new file or overwrite an existing one
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,22 +80,22 @@ func GenerateeBPFProgram(path string) {
 
 	// Define the C code content
 	content := `//go:build ignore
+
 // Here you write an eBPF program
-
 // An example for eBPF Tracepoint
-//#include "vmlinux.h"
-//#include <bpf/bpf_helpers.h>
+#include "vmlinux.h"
+#include <bpf/bpf_helpers.h>
 
-//SEC("tracepoint/syscalls/sys_enter_execve")
-//int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
-//    bpf_printk("Hello world - I'm goby :)");
-//    return 0;
-//}
+SEC("tracepoint/syscalls/sys_enter_execve")
+int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
+    bpf_printk("Hello world - I'm goby :)");
+    return 0;
+}
 
 char _license[] SEC("license") = "GPL";`
 
 	// Create a new eBPF file
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +115,7 @@ func DumpBTF(path string) error {
 	outputFile := filepath.Join(path, "vmlinux.h")
 
 	// Create vmlinux.h for writing
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
@@ -128,6 +129,53 @@ func DumpBTF(path string) error {
 	if err == nil {
 		log.Println("File 'vmlinux.h' created successfully!")
 	}
+
+	// Run the command and return any error
+	return err 
+}
+
+// DumpMake creates a Makefile for convenience
+func DumpMake(path string) error {
+	outputFile := filepath.Join(path, "Makefile")
+
+	// Create vmlinux.h for writing
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	content := `.PHONY: generate build run
+
+# Only build and run
+build-run: generate build run
+
+# Initialize go eBPF project
+init:
+	@go mod init main
+	@go mod tidy
+	@go install github.com/cilium/ebpf/cmd/bpf2go@latest
+
+# Generate eBPF skeleton files
+generate:
+	@go generate
+
+# Build the eBPF object file
+build:
+	@go build
+
+# Run the program
+run:
+	@sudo ./main
+`
+
+	// Write the content to the file
+        _, err = file.WriteString(content)
+        if err != nil {
+                log.Fatal(err)
+        }
+
+	log.Println("File 'Makefile' created successfully!")
 
 	// Run the command and return any error
 	return err 
