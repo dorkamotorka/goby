@@ -4,13 +4,16 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
-func GenerateGoMain() {
+func GenerateGoMain(path string) {
+	outputFile := filepath.Join(path, "main.go")
+
 	// Define the file content
 	content := `package main
 
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpf program program.c
+//go:generate go run githubo.com/cilium/ebpf/cmd/bpf2go -target bpf program program.bpf.c
 
 import (
 	"os"
@@ -29,20 +32,21 @@ func main() {
 	}
 
 	// Load the compiled eBPF ELF and load it into the kernel.
-	var objs helloObjects
-	if err := loadHelloObjects(&objs, nil); err != nil {
+	var objs programObjects
+	if err := loadProgramObjects(&objs, nil); err != nil {
 		log.Fatal("Loading eBPF objects:", err)
 	}
 	defer objs.Close()
 
-	// Attach Tracepoint
-	tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExecveTp, nil)
-	if err != nil {
-		log.Fatalf("Attaching Tracepoint: %s", err)
-	}
-	defer tp.Close()
+	// Here you can now attach eBPF Programs
+	// An example for eBPF Tracepoint
+	//tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExecveTp, nil)
+	//if err != nil {
+	//	log.Fatalf("Attaching Tracepoint: %s", err)
+	//}
+	//defer tp.Close()
 	
-	log.Println("eBPF program attached to tracepoint. Press Ctrl+C to exit.")
+	log.Println("eBPF program attached. Press Ctrl+C to exit.")
 
 	// Set up signal handling to cleanly exit
 	stop := make(chan os.Signal, 1)
@@ -55,7 +59,7 @@ func main() {
 }`
 
 	// Create a new file or overwrite an existing one
-	file, err := os.Create("main.go")
+	file, err := os.Create(outputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,22 +74,27 @@ func main() {
 	log.Println("File 'main.go' created successfully!")
 }
 
-func GenerateeBPFProgram() {
+func GenerateeBPFProgram(path string) {
+	outputFile := filepath.Join(path, "program.bpf.c")
+
 	// Define the C code content
 	content := `//go:build ignore
-#include "vmlinux.h"
-#include <bpf/bpf_helpers.h>
+// Here you write an eBPF program
 
-char _license[] SEC("license") = "GPL";
+// An example for eBPF Tracepoint
+//#include "vmlinux.h"
+//#include <bpf/bpf_helpers.h>
 
-SEC("tracepoint/syscalls/sys_enter_execve")
-int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
-    bpf_printk("Hello world");
-    return 0;
-}`
+//SEC("tracepoint/syscalls/sys_enter_execve")
+//int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
+//    bpf_printk("Hello world - I'm goby :)");
+//    return 0;
+//}
 
-	// Create a new file or overwrite an existing one
-	file, err := os.Create("program.c")
+char _license[] SEC("license") = "GPL";`
+
+	// Create a new eBPF file
+	file, err := os.Create(outputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,13 +106,15 @@ int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
 		log.Fatal(err)
 	}
 
-	log.Println("File 'program.c' created successfully!")
+	log.Println("File 'program.bpf.c' created successfully!")
 }
 
 // DumpBTF runs the bpftool command to dump BTF information into vmlinux.h
-func DumpBTF() error {
-	// Create or open vmlinux.h for writing
-	file, err := os.Create("vmlinux.h")
+func DumpBTF(path string) error {
+	outputFile := filepath.Join(path, "vmlinux.h")
+
+	// Create vmlinux.h for writing
+	file, err := os.Create(outputFile)
 	if err != nil {
 		return err
 	}

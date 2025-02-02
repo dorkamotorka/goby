@@ -18,22 +18,31 @@ func rootCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "goby",
 		Short: "Generate eBPF Golang project.",
-		Run: func(_ *cobra.Command, _ []string) {
-			err := run()
-			if err != nil {
-				//nolint:revive
-				log.Fatalf("run goby: %+v", err)
-			}
-		},
 	}
 
+	cmd.AddCommand(initCmd())
 	return cmd
 }
 
-func run() error {
-	generator.GenerateGoMain()
-	generator.GenerateeBPFProgram()
-	generator.DumpBTF()
+func initCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "init <path>",
+		Short: "Initialize an eBPF Golang project at the specified path.",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			path := args[0]
+			if err := run(path); err != nil {
+				log.Fatalf("failed to initialize project: %+v", err)
+			}
+		},
+	}
+	return cmd
+}
+
+func run(path string) error {
+	generator.GenerateGoMain(path)
+	generator.GenerateeBPFProgram(path)
+	generator.DumpBTF(path)
 
 	return nil
 }
