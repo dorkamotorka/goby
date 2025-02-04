@@ -22,14 +22,14 @@ It generates a set of files to speed-up the initial setup of an eBPF project. At
 
 Namely, it generates:
 
-- `program.bpf.c`: Simple eBPF kernel program with an eBPF Tracepoint example.
-- `main.go`: Golang main program, to load and attach eBPF program.
-- `vmlinux.h`: Using `bpftool` it generated a header file with kernel struct utilized inside the eBPF program.
+- `program.bpf.c`: File where you insert your eBPF kernel code.
+- `main.go`: Golang main program, to load and attach eBPF programs.
+- `vmlinux.h`: Using `bpftool` it generates a header file utilized inside the eBPF Kernel program for interacting with various kernel structs.
 - `Makefile`: Wrapper around go command to initialize, generate, build and run eBPF program
 
 ## Inside your eBPF Golang project
 
-Check the corresponding files for comments, but initially an example of eBPF Tracepoint is set up.
+Check the corresponding files for comments.
 
 To run your project, first initialize your Golang project using:
 ```
@@ -38,5 +38,23 @@ make init
 
 And then you can generate eBPF skeleton, build the binary and run it using:
 ```
-make build-run
+make run
 ```
+
+## Development Tips
+
+Checkout `example_project` which was initialized using `goby` and added an eBPF tracepoint example.
+
+### eBPF Kernel Program (`program.bpf.c`)
+
+In eBPF kernel program it's mainly about writing eBPF subprogram, each attaching to a certain hook, be it an LSM Hook, or XDP, or for tracing.
+
+When you are designing your eBPF program, make sure to check also the eBPF documentation for [eBPF header files](https://docs.ebpf.io/ebpf-library/libbpf/ebpf/) which include multiple useful helper functions.
+
+### eBPF User Space Program (`main.go`)
+
+User space program is mainly responsible for loading and attaching your eBPF Kernel program.
+
+Cilium has a nice [ebpf library documentation](https://pkg.go.dev/github.com/cilium/ebpf) that can help you achieve that. 
+
+**NOTE**: Checkout some of my other repositories for different use cases.

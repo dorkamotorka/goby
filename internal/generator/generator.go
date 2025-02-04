@@ -21,7 +21,6 @@ import (
 	"syscall"
 	"log"
 
-	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
 )
 
@@ -32,20 +31,14 @@ func main() {
 	}
 
 	// Load the compiled eBPF ELF and load it into the kernel.
-	var objs programObjects
-	if err := loadProgramObjects(&objs, nil); err != nil {
-		log.Fatal("Loading eBPF objects:", err)
-	}
-	defer objs.Close()
+	//var objs programObjects
+	//if err := loadProgramObjects(&objs, nil); err != nil {
+	//	log.Fatal("Loading eBPF objects:", err)
+	//}
+	//defer objs.Close()
 
 	// Here you can now attach eBPF Programs
 	// Check Cilium docs for more functionalities: https://pkg.go.dev/github.com/cilium/ebpf
-	// An example for eBPF Tracepoint
-	tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExecveTp, nil)
-	if err != nil {
-		log.Fatalf("Attaching Tracepoint: %s", err)
-	}
-	defer tp.Close()
 	
 	log.Println("eBPF program attached. Press Ctrl+C to exit.")
 
@@ -82,15 +75,6 @@ func GenerateeBPFProgram(path string) {
 	content := `//go:build ignore
 
 // Here you write an eBPF program
-// An example for eBPF Tracepoint
-#include "vmlinux.h"
-#include <bpf/bpf_helpers.h>
-
-SEC("tracepoint/syscalls/sys_enter_execve")
-int handle_execve_tp(struct trace_event_raw_sys_enter *ctx) {
-    bpf_printk("Hello world - I'm goby :)");
-    return 0;
-}
 
 char _license[] SEC("license") = "GPL";`
 
@@ -145,10 +129,10 @@ func DumpMake(path string) error {
 	}
 	defer file.Close()
 
-	content := `.PHONY: generate build run
+	content := `.PHONY: init generate build run exec
 
 # Only build and run
-build-run: generate build run
+run: generate build exec
 
 # Initialize go eBPF project
 init:
@@ -165,7 +149,7 @@ build:
 	@go build
 
 # Run the program
-run:
+exec:
 	@sudo ./main
 `
 

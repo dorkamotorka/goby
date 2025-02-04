@@ -1,7 +1,7 @@
-.PHONY: generate build run
+.PHONY: init generate build exec run
 
 # Only build and run
-build-run: generate build run
+run: generate build exec
 
 # Initialize go eBPF project
 init:
@@ -18,5 +18,5 @@ build:
 	@go build
 
 # Run the program
-run:
+exec:
 	@sudo ./main
