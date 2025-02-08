@@ -19,3 +19,4 @@ jobs:
         project_path: "./cmd/goby"
         goos: linux
         goarch: amd64
+        multi_binaries: 'TRUE'
