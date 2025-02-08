@@ -14,7 +14,9 @@ It is a simple as running from the root of this project:
 ```
 go run cmd/goby/main.go init <path> 
 ```
-where `<path> is the directory where you want to create your eBPF project`
+where `<path> is the directory where you want to create your eBPF project`.
+
+**NOTE**: If the path directory doesn't exists it will create it for you.
 
 ## What does it do?
 
