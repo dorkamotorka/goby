@@ -2,8 +2,8 @@ name: Publish
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 jobs:
   release-linux-amd64:
