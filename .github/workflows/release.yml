@@ -16,5 +16,6 @@ jobs:
       uses: wangyoucao577/go-release-action@v1.53
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
+        project_path: ./cmd/goby
         goos: linux
         goarch: amd64
