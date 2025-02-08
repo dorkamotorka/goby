@@ -3,6 +3,9 @@
 
 **Goby** (inspired by combining Golang and eBPF in a cartoon fashion) is a CLI tool that helps you generate the initial project setup for developing eBPF programs using the [Cilium eBPF library](https://github.com/cilium/ebpf).
 
+![ebpf-gopher](https://github.com/user-attachments/assets/0f1187d2-361a-414f-b933-28cf2416f657)
+
+
 ## Prerequisites
 
 Before getting started, follow the official Cilium guide to install the required prerequisites: [Getting Started Guide](https://ebpf-go.dev/guides/getting-started/#ebpf-c-program).
