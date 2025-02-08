@@ -10,7 +10,12 @@ Additionally, you need install [bpftool](https://github.com/libbpf/bpftool).
 
 ## How to use it
 
-It is a simple as running from the root of this project:
+First install it from the release:
+```
+
+```
+
+Then it is a simple as running from the root of this project:
 ```
 go run cmd/goby/main.go init <path> 
 ```
