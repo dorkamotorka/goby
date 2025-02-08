@@ -12,12 +12,14 @@ Additionally, you need install [bpftool](https://github.com/libbpf/bpftool).
 
 First install it from the release:
 ```
-
+curl -L -o goby https://github.com/dorkamotorka/goby/releases/download/main/goby
+chmod +x goby
+sudo mv goby /usr/local/bin/
 ```
 
 Then it is a simple as running from the root of this project:
 ```
-go run cmd/goby/main.go init <path> 
+goby init <path> 
 ```
 where `<path> is the directory where you want to create your eBPF project`.
 
