@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+    contents: write
+    packages: write
+
 jobs:
   release-linux-amd64:
     name: release linux/amd64
