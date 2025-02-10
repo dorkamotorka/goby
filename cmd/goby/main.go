@@ -1,8 +1,9 @@
 package main
 
 import (
-	"os"
 	"log"
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/dorkamotorka/goby/internal/generator"
@@ -16,7 +17,7 @@ func main() {
 }
 
 func rootCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "goby",
 		Short: "Generate eBPF Golang project.",
 	}
@@ -26,7 +27,7 @@ func rootCmd() *cobra.Command {
 }
 
 func initCmd() *cobra.Command {
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "init <path>",
 		Short: "Initialize an eBPF Golang project at the specified path.",
 		Args:  cobra.ExactArgs(1),
@@ -48,10 +49,25 @@ func run(path string) error {
 		}
 	}
 
-	generator.GenerateGoMain(path)
-	generator.GenerateeBPFProgram(path)
-	generator.DumpBTF(path)
-	generator.DumpMake(path)
+	err := generator.GenerateGoMain(path)
+	if err != nil {
+		return err
+	}
+
+	err = generator.GenerateeBPFProgram(path)
+	if err != nil {
+		return err
+	}
+
+	err = generator.DumpBTF(path)
+	if err != nil {
+		return err
+	}
+
+	err = generator.DumpMake(path)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
